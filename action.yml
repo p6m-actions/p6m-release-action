@@ -1,0 +1,36 @@
+name: "P6m Release Action"
+description: "A simple GitHub Action that prints a greeting"
+author: "Ali Samji <ali@ybor.ai>"
+
+# Define the inputs for this action
+inputs:
+  who-to-greet:
+    description: "Who to greet"
+    required: true
+    default: "World"
+  message:
+    description: "Custom message to include"
+    required: false
+    default: "Hello"
+
+# Define the outputs for this action
+outputs:
+  time:
+    description: "The time we greeted you"
+    value: ${{ steps.hello.outputs.time }}
+
+# Define the runs configuration
+runs:
+  using: "composite"
+  steps:
+    - name: Hello step
+      id: hello
+      shell: bash
+      run: |
+        echo "${{ inputs.message }}, ${{ inputs.who-to-greet }}!"
+        echo "time=$(date)" >> $GITHUB_OUTPUT
+
+# Define the branding for the action in the GitHub Marketplace
+branding:
+  icon: "award"
+  color: "blue"
