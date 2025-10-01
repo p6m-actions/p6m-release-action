@@ -1,0 +1,20 @@
+{
+  "query": "mutation($input: CreateCommitOnBranchInput!) { createCommitOnBranch(input: $input) { commit { oid message } } }",
+  "variables": {
+    "input": {
+      "expectedHeadOid": "",
+      "branch": {
+        "repositoryNameWithOwner": "",
+        "branchName": ""
+      },
+      "message": {
+        "headline": ""
+      },
+      "fileChanges": {
+        "additions": [],
+        "deletions": []
+      }
+    }
+  }
+}
+

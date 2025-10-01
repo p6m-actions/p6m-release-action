@@ -58,7 +58,12 @@ runs:
         pybump set --file ${{ inputs.helm_chart }}/Chart.yaml --app-version --set-version ${{ steps.app.outputs.version }}
         pybump bump --file ${{ inputs.helm_chart }}/Chart.yaml --level patch
         echo "version=$(pybump get --file ${{ inputs.helm_chart }}/Chart.yaml)" >> $GITHUB_OUTPUT
-        echo 'files_changed=["${{ inputs.helm_chart }}/Chart.yaml"]' >> $GITHUB_OUTPUT
+        echo 'files_changed=${{ inputs.helm_chart }}/Chart.yaml' >> $GITHUB_OUTPUT
+
+    - name: Release Version
+      shell: bash
+      run: |
+        echo '${{ steps.app.outputs.version }} ${{ steps.helm.outputs.version }}' | ${{ github.actions_path }}/commit_and_tag.sh
 
 # Define the branding for the action in the GitHub Marketplace
 branding:

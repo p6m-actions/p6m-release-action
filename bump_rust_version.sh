@@ -21,5 +21,5 @@ cargo workspaces version "$VERSION_LEVEL" --yes --no-git-commit
 version=$(cargo metadata --format-version=1 --no-deps | jq -r '.packages[0].version')
 echo "version=$version" >> $GITHUB_OUTPUT
 
-files_changed=$(git diff --name-only | grep 'Cargo.toml' | yq -ojson -I0 -e 'split(" ")')
+files_changed=$(git diff --name-only | grep 'Cargo.toml')
 echo "files_changed=$files_changed" >> $GITHUB_OUTPUT
