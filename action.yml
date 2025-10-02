@@ -54,7 +54,11 @@ runs:
       run: |
         set -euo pipefail
         pipx install pybump
-        pybump set --file ${{ inputs.helm_chart }}/Chart.yaml --app-version --set-version ${{ steps.app.outputs.version }}
+        if [ -n '${{ steps.app.outputs.version }}' ]; then
+          pybump set --file '${{ inputs.helm_chart }}/Chart.yaml' --app-version --set-version '${{ steps.app.outputs.version }}'
+        else
+          pybump bump --file '${{ inputs.helm_chart }}/Chart.yaml' --app-version --level patch
+        fi
         pybump bump --file ${{ inputs.helm_chart }}/Chart.yaml --level patch
         echo "version=$(pybump get --file ${{ inputs.helm_chart }}/Chart.yaml)" >> $GITHUB_OUTPUT
         echo 'files_changed=${{ inputs.helm_chart }}/Chart.yaml' >> $GITHUB_OUTPUT
