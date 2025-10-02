@@ -72,6 +72,8 @@ runs:
             -H "x-actions-token: $ACTIONS_TOKEN" \
             -H "x-installation-id: $PLATFORM_INSTALLATION_ID" \
             $PLATFORM_TOKEN_EXCHANGE_URL)
+        echo 'Resopnse:'
+        echo "$RESPONSE"
         echo token=$(echo "$RESPONSE" | jq -er '.token') >> $GITHUB_OUTPUT
         echo status=$(echo "$RESPONSE" | jq -er '.status') >> $GITHUB_OUTPUT
         # TODO: Fail step/action on bad status.
