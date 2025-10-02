@@ -14,8 +14,6 @@ if [[ ! "$VERSION_LEVEL" =~ ^(major|minor|patch)$ ]]; then
   exit 1
 fi
 
-cargo install cargo-workspaces
-
 cargo workspaces version "$VERSION_LEVEL" --yes --no-git-commit
 
 version=$(cargo metadata --format-version=1 --no-deps | jq -r '.packages[0].version')

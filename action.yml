@@ -27,6 +27,13 @@ runs:
   using: "composite"
   steps:
 
+    # Install prequisites here to take advantage of caching.
+    - name: Install Cargo-Workspaces
+      if: ${{ inputs.language == 'rust' }}
+      uses: baptiste0928/cargo-install@v3
+      with:
+        crate: cargo-workspaces
+
     - name: Version Bump
       shell: bash
       id: app
