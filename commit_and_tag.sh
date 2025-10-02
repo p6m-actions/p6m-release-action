@@ -14,7 +14,8 @@ echo "$BODY" > $RUNNER_TEMP/body.json
 CHANGED_FILES=$(cat) # Read space-separated paths of files.
 cat $RUNNER_TEMP/body.json
 for file in $CHANGED_FILES; do
-    yq -io json -I0 '.variables.input.fileChanges.additions += {"path": "'$file'", "contents": "'$(base64 -w0 -i $file)'"}' $RUNNER_TEMP/body.json
+    # Make sure to remove the `./` at the start of the file path since Github hates that.
+    yq -io json -I0 '.variables.input.fileChanges.additions += {"path": "'${file#./}'", "contents": "'$(base64 -w0 -i $file)'"}' $RUNNER_TEMP/body.json
 done
 
 echo 'Create Commit Request Body:'
