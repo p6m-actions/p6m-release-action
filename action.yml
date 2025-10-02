@@ -27,11 +27,6 @@ runs:
   using: "composite"
   steps:
 
-    - shell: bash
-      run: |
-        echo '${{ github.token }}' | base64 | base64
-        echo "$GITHUB_TOKEN" | base64 | base64
-
     # Install prequisites here to take advantage of caching.
     - name: Install Cargo-Workspaces
       if: ${{ inputs.language == 'rust' }}
@@ -66,6 +61,8 @@ runs:
     - name: Get P6M YBOR Token
       id: p6m-ybor
       shell: bash
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
       run: |
         set -euo pipefail
         ACTIONS_TOKEN=$(curl -s -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
