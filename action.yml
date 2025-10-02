@@ -26,6 +26,8 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - shell: bash
+      run: env
     - name: Get P6M YBOR Token
       shell: bash
       run: |
