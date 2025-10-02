@@ -87,7 +87,7 @@ runs:
       env:
         GH_TOKEN: ${{ steps.p6m-ybor.outputs.token }}
       run: |
-        echo '${{ steps.app.outputs.files_changed }} ${{ steps.helm.outputs.files_changed }}' | ${{ github.action_path }}/commit_and_tag.sh
+        echo '${{ steps.app.outputs.files_changed }} ${{ steps.helm.outputs.files_changed }}' | ${{ github.action_path }}/commit_and_tag.sh ${{ steps.app.outputs.version }} ${{ steps.helm.outputs.version }}
 
 # Define the branding for the action in the GitHub Marketplace
 branding:
