@@ -35,6 +35,7 @@ runs:
         crate: cargo-workspaces
 
     - name: Version Bump
+      if: inputs.language != 'helm'
       shell: bash
       id: app
       run: |
@@ -47,7 +48,7 @@ runs:
         esac
 
     - name: Version Bump (Helm)
-      if: inputs.enable_helm == 'true'
+      if: inputs.enable_helm == 'true' || inputs.language == 'helm'
       shell: bash
       id: helm
       run: |
