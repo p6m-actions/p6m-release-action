@@ -24,5 +24,8 @@ yq -o json $RUNNER_TEMP/body.json
 RESPONSE=$(gh api graphql --input $RUNNER_TEMP/body.json)
 echo "$RESPONSE" | yq -o json
 
-# TODO: Use response to create tag and reference for the returned oid.
-# .data.createCommitOnBranch.commit.oid
+NEW_SHA=$(echo "$RESPONSE" | jq -er '.data.createCommitOnBranch.commit.oid')
+VERSION=$1
+HELM_VERSION=${2:-$1}
+gh api -X POST /repos/p6m-dev/token-exchange-demo/git/refs -f "ref=refs/tags/v$VERSION" -f "sha=$NEW_SHA"
+gh api -X POST /repos/p6m-dev/token-exchange-demo/git/refs -f "ref=refs/tags/helm-v$HELM_VERSION" -f "sha=$NEW_SHA"
