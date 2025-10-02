@@ -6,7 +6,7 @@ cp $GITHUB_ACTION_PATH/createCommit.json $RUNNER_TEMP/body.json
 BODY=$(cat $RUNNER_TEMP/body.json |\
     yq '.variables.input.branch.branchName = "'$GITHUB_REF_NAME'"' |\
     yq '.variables.input.branch.repositoryNameWithOwner = "'$GITHUB_REPOSITORY'"' |\
-    yq '.variables.input.message.headline = "chore: Bump Versions."' |\
+    yq '.variables.input.message.headline = "[skip ci] chore: Bump Versions."' |\
     yq '.variables.input.expectedHeadOid = "'$SHA'"' |\
     yq -o json -I0)
 echo "$BODY" > $RUNNER_TEMP/body.json
@@ -25,3 +25,4 @@ RESPONSE=$(gh api graphql --input $RUNNER_TEMP/body.json)
 echo "$RESPONSE" | yq -o json
 
 # TODO: Use response to create tag and reference for the returned oid.
+# .data.createCommitOnBranch.commit.oid
