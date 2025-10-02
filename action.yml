@@ -72,7 +72,7 @@ runs:
             -H "x-actions-token: $ACTIONS_TOKEN" \
             -H "x-installation-id: $PLATFORM_INSTALLATION_ID" \
             $PLATFORM_TOKEN_EXCHANGE_URL)
-        ERROR=$(echo "$RESPONSE" | jq -er '.error')
+        ERROR=$(echo "$RESPONSE" | jq -r '.error')
         echo "$ERROR"
         if [ -n "$ERROR" ]; then
           echo "Error: $ERROR"
