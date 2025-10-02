@@ -26,17 +26,6 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Get P6M YBOR Token
-      shell: bash
-      run: |
-        set -euo pipefail
-        ACTIONS_TOKEN=$(curl -s -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-          "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value')
-        echo "GH_TOKEN=$(curl \
-            -H "x-github-token: $GITHUB_TOKEN" \
-            -H "x-actions-token: $ACTIONS_TOKEN" \
-            -H "x-installation-id: $PLATFORM_INSTALLATION_ID"
-            $PLATFORM_TOKEN_EXCHANGE_URL | jq -r '.GITHUB_TOKEN')" >> $GITHUB_ENV
 
     - name: Version Bump
       shell: bash
@@ -62,8 +51,26 @@ runs:
         echo "version=$(pybump get --file ${{ inputs.helm_chart }}/Chart.yaml)" >> $GITHUB_OUTPUT
         echo 'files_changed=${{ inputs.helm_chart }}/Chart.yaml' >> $GITHUB_OUTPUT
 
+    - name: Get P6M YBOR Token
+      id: p6m-ybor
+      shell: bash
+      run: |
+        set -euo pipefail
+        ACTIONS_TOKEN=$(curl -s -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+          "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -er '.value')
+        RESPONSE=$(curl \
+            -H "x-github-token: $GITHUB_TOKEN" \
+            -H "x-actions-token: $ACTIONS_TOKEN" \
+            -H "x-installation-id: $PLATFORM_INSTALLATION_ID"
+            $PLATFORM_TOKEN_EXCHANGE_URL)"
+        echo token=$(echo "$RESPONSE" | jq -er '.token') >> $GITHUB_OUTPUT
+        echo status=$(echo "$RESPONSE" | jq -er '.status') >> $GITHUB_OUTPUT
+        # TODO: Fail step/action on bad status.
+
     - name: Release Version
       shell: bash
+      env:
+        GH_TOKEN: ${{ steps.p6m-ybor.outputs.token }}
       run: |
         echo '${{ steps.app.outputs.files_changed }} ${{ steps.helm.outputs.files_changed }}' | ${{ github.action_path }}/commit_and_tag.sh
 
