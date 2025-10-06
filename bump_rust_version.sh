@@ -20,4 +20,6 @@ version=$(cargo metadata --format-version=1 --no-deps | jq -r '.packages[0].vers
 echo "version=$version" >> $GITHUB_OUTPUT
 
 files_changed=$(git diff --name-only | grep 'Cargo.toml')
-echo "files_changed=$files_changed" >> $GITHUB_OUTPUT
+echo 'files_changed<<EOF' >> $GITHUB_OUTPUT
+echo "$files_changed" >> $GITHUB_OUTPUT
+echo 'EOF' >> $GITHUB_OUTPUT
