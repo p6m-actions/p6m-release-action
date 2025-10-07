@@ -2,16 +2,32 @@
 set -euo pipefail
 
 DRY_RUN=false
-if [[ "${1:-}" == "--dry-run" ]]; then
-  DRY_RUN=true
-  shift
-fi
+TAGS=()
+COMMIT_MESSAGE=""
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --dry-run)
+      DRY_RUN=true
+      shift
+      ;;
+    --tag)
+      TAGS+=("$2")
+      shift 2
+      ;;
+    --message)
+      COMMIT_MESSAGE="$2"
+      shift 2
+      ;;
+    *)
+      echo "Unknown option: $1"
+      exit 1
+      ;;
+  esac
+done
 
 SHA=$(gh api '/repos/'$GITHUB_REPOSITORY'/branches/'$GITHUB_REF_NAME | jq -er .commit.sha)
 cp $GITHUB_ACTION_PATH/createCommit.json $RUNNER_TEMP/body.json
-
-COMMIT_MESSAGE="${@: -1}"
-TAGS=("${@:1:$#-1}")
 
 BODY=$(cat $RUNNER_TEMP/body.json |\
     yq '.variables.input.branch.branchName = "'$GITHUB_REF_NAME'"' |\

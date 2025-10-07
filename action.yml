@@ -46,7 +46,11 @@ runs:
       env:
         GH_TOKEN: ${{ steps.p6m-ybor.outputs.token }}
       run: |
-        ${{ github.action_path }}/commit_and_tag.sh ${{ inputs.tags }} '${{ inputs.commit_message }}'
+        ARGS="--message '${{ inputs.commit_message }}'"
+        for tag in ${{ inputs.tags }}; do
+          ARGS="$ARGS --tag $tag"
+        done
+        ${{ github.action_path }}/commit_and_tag.sh $ARGS
 
 # Define the branding for the action in the GitHub Marketplace
 branding:
