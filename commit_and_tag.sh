@@ -3,9 +3,8 @@ set -euo pipefail
 SHA=$(gh api '/repos/'$GITHUB_REPOSITORY'/branches/'$GITHUB_REF_NAME | jq -er .commit.sha)
 cp $GITHUB_ACTION_PATH/createCommit.json $RUNNER_TEMP/body.json
 
-VERSION=$1
-HELM_VERSION=${2:-}
-COMMIT_MESSAGE=$3
+COMMIT_MESSAGE="${@: -1}"
+TAGS=("${@:1:$#-1}")
 
 BODY=$(cat $RUNNER_TEMP/body.json |\
     yq '.variables.input.branch.branchName = "'$GITHUB_REF_NAME'"' |\
@@ -30,7 +29,6 @@ RESPONSE=$(gh api graphql --input $RUNNER_TEMP/body.json)
 echo "$RESPONSE" | yq -o json
 
 NEW_SHA=$(echo "$RESPONSE" | jq -er '.data.createCommitOnBranch.commit.oid')
-gh api -X POST /repos/$GITHUB_REPOSITORY/git/refs -f "ref=refs/tags/v$VERSION" -f "sha=$NEW_SHA"
-if [ -n "$HELM_VERSION" ]; then
-  gh api -X POST /repos/$GITHUB_REPOSITORY/git/refs -f "ref=refs/tags/helm-v$HELM_VERSION" -f "sha=$NEW_SHA"
-fi
+for tag in "${TAGS[@]}"; do
+  gh api -X POST /repos/$GITHUB_REPOSITORY/git/refs -f "ref=refs/tags/$tag" -f "sha=$NEW_SHA"
+done

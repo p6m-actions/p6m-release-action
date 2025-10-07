@@ -4,12 +4,9 @@ author: "Ali Samji <ali@ybor.ai>"
 
 # Define the inputs for this action
 inputs:
-  version:
-    description: The version to tag (e.g., "1.2.3")
+  tags:
+    description: Newline-separated list of tags to create
     required: true
-  helmVersion:
-    description: The helm chart version to tag (optional, e.g., "1.2.3")
-    required: false
   commit_message:
     description: Commit message for the changes
     required: false
@@ -49,7 +46,7 @@ runs:
       env:
         GH_TOKEN: ${{ steps.p6m-ybor.outputs.token }}
       run: |
-        ${{ github.action_path }}/commit_and_tag.sh '${{ inputs.version }}' '${{ inputs.helmVersion }}'
+        ${{ github.action_path }}/commit_and_tag.sh ${{ inputs.tags }} '${{ inputs.commit_message }}'
 
 # Define the branding for the action in the GitHub Marketplace
 branding:
