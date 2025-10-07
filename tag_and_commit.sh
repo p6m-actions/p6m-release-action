@@ -40,9 +40,9 @@ echo "$BODY" > $RUNNER_TEMP/body.json
 CHANGED_FILES=$(git diff --name-only)
 for file in $CHANGED_FILES; do
     # Make sure to remove the `./` at the start of the file path since Github hates that.
-    export FILE_PATH="${file#./}"
-    export FILE_CONTENTS=$(base64 -w0 -i "$file")
-    yq -io json -I0 '.variables.input.fileChanges.additions += [{"path": env(FILE_PATH), "contents": env(FILE_CONTENTS)}]' $RUNNER_TEMP/body.json
+    FILE_PATH="${file#./}"
+    base64 -w0 -i "$file" > $RUNNER_TEMP/file_content.txt
+    yq -i -o json -I0 ".variables.input.fileChanges.additions += [{\"path\": \"$FILE_PATH\", \"contents\": load_str(\"$RUNNER_TEMP/file_content.txt\")}]" $RUNNER_TEMP/body.json
 done
 
 if [ "$DRY_RUN" = true ]; then

@@ -38,7 +38,7 @@ runs:
             -H "x-installation-id: $PLATFORM_INSTALLATION_ID" \
             $PLATFORM_TOKEN_EXCHANGE_URL)
         ERROR=$(echo "$RESPONSE" | jq -r '.error')
-        if [ "$ERROR" -ne 'null' ]; then
+        if [ "$ERROR" != 'null' ]; then
           echo "Error: $ERROR"
           exit 1
         fi
