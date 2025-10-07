@@ -1,0 +1,2 @@
+- [ ] Add support for different file changes (added, modified, renamed, deleted)
+  - Tip: Use `git add -A; git diff --name-status` to get ALL of the changes in the repo.

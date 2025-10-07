@@ -43,21 +43,24 @@ for file in $CHANGED_FILES; do
     yq -io json -I0 '.variables.input.fileChanges.additions += {"path": "'${file#./}'", "contents": "'$(base64 -w0 -i $file)'"}' $RUNNER_TEMP/body.json
 done
 
-# Using the gh cli produces a VERIFIED commit.
 if [ "$DRY_RUN" = true ]; then
+  for tag in "${TAGS[@]}"; do
+    echo "[DRY RUN] gh api -X POST /repos/$GITHUB_REPOSITORY/git/refs -f ref=refs/tags/$tag -f sha=$SHA"
+  done
+
   echo "[DRY RUN] gh api graphql --input $RUNNER_TEMP/body.json"
   echo 'Create Commit Request Body:'
   yq -o json $RUNNER_TEMP/body.json
-
-  for tag in "${TAGS[@]}"; do
-    echo "[DRY RUN] gh api -X POST /repos/$GITHUB_REPOSITORY/git/refs -f ref=refs/tags/$tag -f sha=<NEW_SHA>"
-  done
+  NEW_SHA=""
 else
+  for tag in "${TAGS[@]}"; do
+    gh api -X POST /repos/$GITHUB_REPOSITORY/git/refs -f "ref=refs/tags/$tag" -f "sha=$SHA"
+  done
+
+  # Using the gh cli produces a VERIFIED commit.
   RESPONSE=$(gh api graphql --input $RUNNER_TEMP/body.json)
   echo "$RESPONSE" | yq -o json
   NEW_SHA=$(echo "$RESPONSE" | jq -er '.data.createCommitOnBranch.commit.oid')
-
-  for tag in "${TAGS[@]}"; do
-    gh api -X POST /repos/$GITHUB_REPOSITORY/git/refs -f "ref=refs/tags/$tag" -f "sha=$NEW_SHA"
-  done
 fi
+
+echo "new_sha=$NEW_SHA" >> $GITHUB_OUTPUT

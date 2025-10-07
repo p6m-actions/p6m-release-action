@@ -12,6 +12,12 @@ inputs:
     required: false
     default: "[skip ci] chore: Release changes."
 
+# Define the outputs for this action
+outputs:
+  new_sha:
+    description: The SHA of the new commit created
+    value: ${{ steps.release.outputs.new_sha }}
+
 # Define the runs configuration
 runs:
   using: "composite"
@@ -42,6 +48,7 @@ runs:
         echo "Status: $STATUS"
 
     - name: Release Version
+      id: release
       shell: bash
       env:
         GH_TOKEN: ${{ steps.p6m-ybor.outputs.token }}
@@ -50,7 +57,7 @@ runs:
         for tag in ${{ inputs.tags }}; do
           ARGS="$ARGS --tag $tag"
         done
-        ${{ github.action_path }}/commit_and_tag.sh $ARGS
+        ${{ github.action_path }}/tag_and_commit.sh $ARGS
 
 # Define the branding for the action in the GitHub Marketplace
 branding:
