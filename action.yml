@@ -1,65 +1,24 @@
 name: "P6m Release Action"
-description: "Bumps versions and tag a commit"
+description: "Tags and commits changes"
 author: "Ali Samji <ali@ybor.ai>"
 
 # Define the inputs for this action
 inputs:
-  language:
-    description: The language that app is written in.
+  version:
+    description: The version to tag (e.g., "1.2.3")
     required: true
-  enable_helm:
-    description: A value indicating whether there is helm chart in the repo.
-    default: 'false'
-  helm_chart:
-    description: The path to the helm chart. This should be the directory that contains Chart.yaml
-
-# Define the outputs for this action
-outputs:
-  appVersion:
-    description: The version of the app after the bump.
-    value: ${{ steps.app.outputs.version }}
   helmVersion:
-    description: The version of the helm chart after the bump. Empty if helm is disabled.
-    value: ${{ steps.helm.outputs.version }}
+    description: The helm chart version to tag (optional, e.g., "1.2.3")
+    required: false
+  commit_message:
+    description: Commit message for the changes
+    required: false
+    default: "[skip ci] chore: Release changes."
 
 # Define the runs configuration
 runs:
   using: "composite"
   steps:
-
-    # Install prequisites here to take advantage of caching.
-    - name: Install Cargo-Workspaces
-      if: ${{ inputs.language == 'rust' }}
-      uses: baptiste0928/cargo-install@v3
-      with:
-        crate: cargo-workspaces
-
-    - name: Version Bump
-      if: inputs.language != 'helm'
-      shell: bash
-      id: app
-      run: |
-        case '${{ inputs.language }}' in
-          'rust') ${{ github.action_path }}/bump_rust_version.sh patch ;;
-          *)
-            echo '${{ inputs.language }} is not supported.'
-            exit 1
-            ;;
-        esac
-
-    - name: Version Bump (Helm)
-      if: inputs.enable_helm == 'true' || inputs.language == 'helm'
-      shell: bash
-      id: helm
-      run: |
-        set -euo pipefail
-        pipx install pybump
-        if [ -n '${{ steps.app.outputs.version }}' ]; then
-          pybump set --file '${{ inputs.helm_chart }}/Chart.yaml' --app-version --set-version '${{ steps.app.outputs.version }}'
-        fi
-        pybump bump --file ${{ inputs.helm_chart }}/Chart.yaml --level patch
-        echo "version=$(pybump get --file ${{ inputs.helm_chart }}/Chart.yaml)" >> $GITHUB_OUTPUT
-        echo 'files_changed=${{ inputs.helm_chart }}/Chart.yaml' >> $GITHUB_OUTPUT
 
     - name: Get P6M YBOR Token
       id: p6m-ybor
@@ -90,7 +49,7 @@ runs:
       env:
         GH_TOKEN: ${{ steps.p6m-ybor.outputs.token }}
       run: |
-        echo '${{ steps.app.outputs.files_changed }} ${{ steps.helm.outputs.files_changed }}' | ${{ github.action_path }}/commit_and_tag.sh ${{ steps.app.outputs.version }} ${{ steps.helm.outputs.version }}
+        ${{ github.action_path }}/commit_and_tag.sh '${{ inputs.version }}' '${{ inputs.helmVersion }}'
 
 # Define the branding for the action in the GitHub Marketplace
 branding:
