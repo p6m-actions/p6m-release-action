@@ -10,7 +10,7 @@ inputs:
   commit_message:
     description: Commit message for the changes
     required: false
-    default: "[skip ci] chore: Release changes."
+    default: "[skip ci] Bump version for next release."
 
 # Define the outputs for this action
 outputs:
