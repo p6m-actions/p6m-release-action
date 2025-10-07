@@ -38,18 +38,15 @@ BODY=$(cat $RUNNER_TEMP/body.json |\
 echo "$BODY" > $RUNNER_TEMP/body.json
 
 CHANGED_FILES=$(git diff --name-only)
-cat $RUNNER_TEMP/body.json
 for file in $CHANGED_FILES; do
     # Make sure to remove the `./` at the start of the file path since Github hates that.
     yq -io json -I0 '.variables.input.fileChanges.additions += {"path": "'${file#./}'", "contents": "'$(base64 -w0 -i $file)'"}' $RUNNER_TEMP/body.json
 done
 
-echo 'Create Commit Request Body:'
-yq -o json $RUNNER_TEMP/body.json
-
 # Using the gh cli produces a VERIFIED commit.
 if [ "$DRY_RUN" = true ]; then
   echo "[DRY RUN] gh api graphql --input $RUNNER_TEMP/body.json"
+  echo 'Create Commit Request Body:'
   yq -o json $RUNNER_TEMP/body.json
 
   for tag in "${TAGS[@]}"; do
