@@ -1,5 +1,12 @@
 #! /bin/bash
 set -euo pipefail
+
+DRY_RUN=false
+if [[ "${1:-}" == "--dry-run" ]]; then
+  DRY_RUN=true
+  shift
+fi
+
 SHA=$(gh api '/repos/'$GITHUB_REPOSITORY'/branches/'$GITHUB_REF_NAME | jq -er .commit.sha)
 cp $GITHUB_ACTION_PATH/createCommit.json $RUNNER_TEMP/body.json
 
@@ -25,10 +32,19 @@ echo 'Create Commit Request Body:'
 yq -o json $RUNNER_TEMP/body.json
 
 # Using the gh cli produces a VERIFIED commit.
-RESPONSE=$(gh api graphql --input $RUNNER_TEMP/body.json)
-echo "$RESPONSE" | yq -o json
+if [ "$DRY_RUN" = true ]; then
+  echo "[DRY RUN] gh api graphql --input $RUNNER_TEMP/body.json"
+  yq -o json $RUNNER_TEMP/body.json
 
-NEW_SHA=$(echo "$RESPONSE" | jq -er '.data.createCommitOnBranch.commit.oid')
-for tag in "${TAGS[@]}"; do
-  gh api -X POST /repos/$GITHUB_REPOSITORY/git/refs -f "ref=refs/tags/$tag" -f "sha=$NEW_SHA"
-done
+  for tag in "${TAGS[@]}"; do
+    echo "[DRY RUN] gh api -X POST /repos/$GITHUB_REPOSITORY/git/refs -f ref=refs/tags/$tag -f sha=<NEW_SHA>"
+  done
+else
+  RESPONSE=$(gh api graphql --input $RUNNER_TEMP/body.json)
+  echo "$RESPONSE" | yq -o json
+  NEW_SHA=$(echo "$RESPONSE" | jq -er '.data.createCommitOnBranch.commit.oid')
+
+  for tag in "${TAGS[@]}"; do
+    gh api -X POST /repos/$GITHUB_REPOSITORY/git/refs -f "ref=refs/tags/$tag" -f "sha=$NEW_SHA"
+  done
+fi
