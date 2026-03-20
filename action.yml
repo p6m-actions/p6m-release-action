@@ -22,7 +22,6 @@ outputs:
 runs:
   using: "composite"
   steps:
-
     - name: Get P6M YBOR Token
       id: p6m-ybor
       shell: bash
@@ -57,7 +56,15 @@ runs:
         for tag in ${{ inputs.tags }}; do
           ARGS+=(--tag "$tag")
         done
-        ${{ github.action_path }}/tag_and_commit.sh "${ARGS[@]}"
+        delay=5
+        attempt=1
+        # Will retry 6 times (7 total attempts including the initial attempt) with exponential backoff.
+        until ${{ github.action_path }}/tag_and_commit.sh "${ARGS[@]}" || [ $attempt -ge 7 ]; do
+          echo "Git push failed. Retrying in $delay seconds"
+          sleep $delay
+          delay=$(($delay * 2))
+          attempt=$(($attempt + 1))
+        done
 
 # Define the branding for the action in the GitHub Marketplace
 branding:
