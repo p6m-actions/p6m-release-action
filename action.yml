@@ -22,7 +22,6 @@ outputs:
 runs:
   using: "composite"
   steps:
-
     - name: Get P6M YBOR Token
       id: p6m-ybor
       shell: bash
@@ -57,7 +56,21 @@ runs:
         for tag in ${{ inputs.tags }}; do
           ARGS+=(--tag "$tag")
         done
-        ${{ github.action_path }}/tag_and_commit.sh "${ARGS[@]}"
+        delay=5
+        attempt=1
+        max_attempts=7
+        # Will retry 6 times (7 total attempts including the initial attempt) with exponential backoff.
+        until ${{ github.action_path }}/tag_and_commit.sh "${ARGS[@]}"; do
+          if [ $attempt -ge $max_attempts ]; then
+            echo "::error::Release failed after $max_attempts attempts. Giving up."
+            exit 1
+          fi
+          echo "::warning::Attempt $attempt/$max_attempts failed. Retrying in ${delay}s..."
+          sleep $delay
+          delay=$(($delay * 2))
+          attempt=$(($attempt + 1))
+        done
+        echo "::notice::Release succeeded on attempt $attempt/$max_attempts."
 
 # Define the branding for the action in the GitHub Marketplace
 branding:
