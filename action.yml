@@ -22,35 +22,12 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Get P6M YBOR Token
-      id: p6m-ybor
-      shell: bash
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      run: |
-        set -euo pipefail
-        ACTIONS_TOKEN=$(curl -s -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-          "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -er '.value')
-        RESPONSE=$(curl -X POST \
-            -H "x-github-token: $GITHUB_TOKEN" \
-            -H "x-actions-token: $ACTIONS_TOKEN" \
-            -H "x-installation-id: $PLATFORM_INSTALLATION_ID" \
-            $PLATFORM_TOKEN_EXCHANGE_URL)
-        ERROR=$(echo "$RESPONSE" | jq -r '.error')
-        if [ "$ERROR" != 'null' ]; then
-          echo "Error: $ERROR"
-          exit 1
-        fi
-        echo token=$(echo "$RESPONSE" | jq -er '.token') >> $GITHUB_OUTPUT
-        STATUS=$(echo "$RESPONSE" | jq -er '.status')
-        echo status=$STATUS >> $GITHUB_OUTPUT
-        echo "Status: $STATUS"
+    - name: Token Exchange
+      uses: p6m-actions/token-exchange@v2
 
     - name: Release Version
       id: release
       shell: bash
-      env:
-        GH_TOKEN: ${{ steps.p6m-ybor.outputs.token }}
       run: |
         ARGS=(--message '${{ inputs.commit_message }}')
         for tag in ${{ inputs.tags }}; do
