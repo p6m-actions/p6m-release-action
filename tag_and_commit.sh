@@ -3,6 +3,7 @@ set -euo pipefail
 
 DRY_RUN=false
 TAGS=()
+FILES=()
 COMMIT_MESSAGE=""
 
 while [[ $# -gt 0 ]]; do
@@ -13,6 +14,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --tag)
       TAGS+=("$2")
+      shift 2
+      ;;
+    --file)
+      FILES+=("$2")
       shift 2
       ;;
     --message)
@@ -37,6 +42,9 @@ BODY=$(cat $RUNNER_TEMP/body.json |\
     yq -o json -I0)
 echo "$BODY" > $RUNNER_TEMP/body.json
 
+if [ ${#FILES[@]} -gt 0 ]; then
+  git add --intent-to-add "${FILES[@]}"
+fi
 CHANGED_FILES=$(git diff --name-only)
 for file in $CHANGED_FILES; do
     # Make sure to remove the `./` at the start of the file path since Github hates that.

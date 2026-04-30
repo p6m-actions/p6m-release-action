@@ -11,6 +11,10 @@ inputs:
     description: Commit message for the changes
     required: false
     default: "[skip ci] Bump version for next release."
+  files:
+    description: Newline-separated list of untracked files to stage for the commit. All unstaged changes (including these files) will be committed.
+    required: false
+    default: ""
 
 # Define the outputs for this action
 outputs:
@@ -32,6 +36,9 @@ runs:
         ARGS=(--message '${{ inputs.commit_message }}')
         for tag in ${{ inputs.tags }}; do
           ARGS+=(--tag "$tag")
+        done
+        for file in ${{ inputs.files }}; do
+          ARGS+=(--file "$file")
         done
         delay=5
         attempt=1
