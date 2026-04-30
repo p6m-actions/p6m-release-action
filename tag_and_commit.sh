@@ -54,19 +54,25 @@ for file in $CHANGED_FILES; do
 done
 
 if [ "$DRY_RUN" = true ]; then
-  echo "[DRY RUN] gh api graphql --input $RUNNER_TEMP/body.json"
-  echo 'Create Commit Request Body:'
-  yq -o json $RUNNER_TEMP/body.json
+  if [ -n "$CHANGED_FILES" ]; then
+    echo "[DRY RUN] gh api graphql --input $RUNNER_TEMP/body.json"
+    echo 'Create Commit Request Body:'
+    yq -o json $RUNNER_TEMP/body.json
+  fi
   NEW_SHA=""
 
   for tag in "${TAGS[@]}"; do
     echo "[DRY RUN] gh api -X POST /repos/$GITHUB_REPOSITORY/git/refs -f ref=refs/tags/$tag -f sha=$SHA"
   done
 else
-  # Using the gh cli produces a VERIFIED commit.
-  RESPONSE=$(gh api graphql --input $RUNNER_TEMP/body.json)
-  echo "$RESPONSE" | yq -o json
-  NEW_SHA=$(echo "$RESPONSE" | jq -er '.data.createCommitOnBranch.commit.oid')
+  if [ -n "$CHANGED_FILES" ]; then
+    # Using the gh cli produces a VERIFIED commit.
+    RESPONSE=$(gh api graphql --input $RUNNER_TEMP/body.json)
+    echo "$RESPONSE" | yq -o json
+    NEW_SHA=$(echo "$RESPONSE" | jq -er '.data.createCommitOnBranch.commit.oid')
+  else
+    NEW_SHA=""
+  fi
 
   for tag in "${TAGS[@]}"; do
     gh api -X POST /repos/$GITHUB_REPOSITORY/git/refs -f "ref=refs/tags/$tag" -f "sha=$SHA"
