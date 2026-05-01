@@ -37,9 +37,9 @@ runs:
         for tag in ${{ inputs.tags }}; do
           ARGS+=(--tag "$tag")
         done
-        for file in ${{ inputs.files }}; do
-          ARGS+=(--file "$file")
-        done
+        while IFS= read -r file; do
+          [[ -n "$file" ]] && ARGS+=(--file "$file")
+        done <<< '${{ inputs.files }}'
         delay=5
         attempt=1
         max_attempts=7
