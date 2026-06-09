@@ -54,7 +54,8 @@ if [ "$DRY_RUN" = true ]; then
   NEW_SHA=""
 
   for tag in "${TAGS[@]}"; do
-    echo "[DRY RUN] gh api -X POST /repos/$GITHUB_REPOSITORY/git/refs -f ref=refs/tags/$tag -f sha=$SHA"
+    echo "[DRY RUN] gh api -X POST /repos/$GITHUB_REPOSITORY/git/tags -f tag=$tag -f message=\"Release $tag\" -f object=$SHA -f type=commit"
+    echo "[DRY RUN] gh api -X POST /repos/$GITHUB_REPOSITORY/git/refs -f ref=refs/tags/$tag -f sha=<tag-object-sha>"
   done
 else
   if [ -n "$CHANGED_FILES" ]; then
@@ -67,7 +68,13 @@ else
   fi
 
   for tag in "${TAGS[@]}"; do
-    gh api -X POST /repos/$GITHUB_REPOSITORY/git/refs -f "ref=refs/tags/$tag" -f "sha=$SHA"
+    TAG_SHA=$(gh api -X POST /repos/$GITHUB_REPOSITORY/git/tags \
+      -f "tag=$tag" \
+      -f "message=Release $tag" \
+      -f "object=$SHA" \
+      -f "type=commit" \
+      | jq -er '.sha')
+    gh api -X POST /repos/$GITHUB_REPOSITORY/git/refs -f "ref=refs/tags/$tag" -f "sha=$TAG_SHA"
   done
 fi
 
