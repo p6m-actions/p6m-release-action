@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Minimal `gh` stand-in for the tag_and_commit.sh self-test.
+#
+# The script under test runs with --dry-run, which echoes (rather than executes)
+# the commit-creation and tag-creation `gh` calls. The only live `gh` call left
+# is the branch head-SHA lookup, which this stub answers with a fixed value.
+set -euo pipefail
+
+if [[ "${1:-}" == "api" && "${2:-}" == /repos/*/branches/* ]]; then
+  echo '{"commit":{"sha":"0000000000000000000000000000000000000000"}}'
+  exit 0
+fi
+
+echo "gh stub: unhandled invocation: $*" >&2
+exit 1
