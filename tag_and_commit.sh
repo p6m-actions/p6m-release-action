@@ -37,6 +37,11 @@ BODY=$(cat $RUNNER_TEMP/body.json |\
     yq -o json -I0)
 echo "$BODY" > $RUNNER_TEMP/body.json
 
+# Stage all working-tree changes (tracked modifications and new untracked files)
+# so version bumps produced by upstream tools (e.g. cargo release, pybump) are
+# captured. The commit content itself is read from the working tree below, so
+# staging here is only used to detect which files changed.
+git add -A
 CHANGED_FILES=$(git diff --cached --name-only)
 for file in $CHANGED_FILES; do
     # Make sure to remove the `./` at the start of the file path since Github hates that.
